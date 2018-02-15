@@ -1,3 +1,5 @@
+#! Coded by Godlik
+
 import sys, requests, json, time, hashlib
 from bs4 import BeautifulSoup as bs
 
