@@ -3,7 +3,7 @@
 import sys, requests, json, time, hashlib
 from bs4 import BeautifulSoup as bs
 
-
+#begin
 def hbased():
 	banner = """	 
  ---=[ hbased.py Tool Coded by @Godlik ]=--- 			 
@@ -17,6 +17,8 @@ def hbased():
 <>  [--hash] <MD5|SHA1|SHA512> <HASH> [--L] <WORDLIST.TXT>
 		   """	
 	try:
+		
+		# Checking Arguments
 		if len(sys.argv) == 0:
 			print(banner + usage)
 			exit()
@@ -27,7 +29,7 @@ def hbased():
 				print(usage)
 				sys.exit()
 				exit()
-			
+			# hash cracker
 			if sys.argv[1] == '--hash':
 				_thash_ = sys.argv[2]
 				_hash_ = sys.argv[3]
@@ -41,10 +43,10 @@ def hbased():
 				wordlist = ''
 				_wordlist_ = False
 				_file_ = False
-				
+				# view site's source code
 				if sys.argv[3] == '--source':
 					sitesource(host)
-
+				# look for robots.txt file
 				if sys.argv[3] == '--R':
 					if len(sys.argv) > 4:
 						if sys.argv[4] == '--F':
@@ -53,7 +55,7 @@ def hbased():
 
 					robots(host, file, _file_)
 					exit()
-
+				# extract urls from source a given site
 				elif sys.argv[3] == '--geturl':
 					if len(sys.argv) > 4:
 						if sys.argv[4] == '--F':
@@ -62,7 +64,7 @@ def hbased():
 
 					geturl(host, file, _file_)
 					exit()
-
+				# xss scanner (i'm gonna add also an sqli scanner)
 				elif sys.argv[3] == '--XSS':
 					method = sys.argv[4]
 					if len(sys.argv) > 5:
@@ -72,7 +74,7 @@ def hbased():
 
 					xsscanner(host, method, wordlist, _wordlist_)
 					exit()
-
+				# bruteforce to find the admin login page
 				elif sys.argv[3] == '--findadm':
 					if len(sys.argv) > 4:
 						if sys.argv[4] == '--F':
@@ -91,15 +93,22 @@ def hashcracker(_tshash_, _hash_, wordlist):
 	for passw in wordlist:
 		passw = passw.encode('utf-8')
 		if _tshash_ == 'md5':
+			# decrypt md5 hash
 			__hash = hashlib.md5(passw.strip()).hexdigest()
+			# convert the string in ascii 
 			passw = passw.decode('ascii').strip()
 		elif _tshash_ == 'sha1':
+			# decrypt sha1 hash
 			__hash = hashlib.sha1(passw.strip()).hexdigest()
+			# convert the string in ascii 
 			passw = passw.decode('ascii').strip()
 		elif _tshash_ == 'sha512':
+			# decrypt sha512 hash
 			__hash = hashlib.sha512(passw.strip()).hexdigest()
+			# convert the string in ascii 
 			passw = passw.decode('ascii').strip()
 		if _hash_ == __hash:
+			# print out the hash cracked
 			print("\nHash Cracked: %s" % (str(passw)))
 			print("------=[Hash %s]=------" % (_tshash_))
 			exit()
@@ -112,6 +121,7 @@ def sitesource(host):
 	print(" Getting Source ...")
 	if host[:4] != "http":
 		host = "http://" + host
+	# send the request and get the source
 	sauce = requests.get(host).text
 	print("\n ------=[Robots.txt]=------\n\n%s\n\n ------=[Robots.txt]=------" % (sauce))
 
@@ -126,15 +136,18 @@ def robots(host, file, _file_):
 		print("\n [*] Start Scanning [%s]: %s\n" % (time_, host))
 		print(" Getting Robots.txt ... ")
 		robot = requests.get(url)
+		# if the page is up print the file robots.txt
 		if robot.status_code == 200:
 			print("\n ------=[Robots.txt]=------")
 			robot = robot.text
 			print("\n" + robot + "\n")
 			print(" ------=[Robots End]=------")
+			# if the user wants to save the file robots.txt (--F <outfile.txt>)
 			if _file_ == True:
 				with open(file, 'a') as f:
 					f.write("\n ------=[Robots.txt]=------\n\n" + robot + "\n ------=[Robots.txt]=------")
 					f.close()
+		# if the page is down return the error 
 		else:
 			print(" [!] Operation Failed, URL is not online")
 	
@@ -149,17 +162,23 @@ def geturl(host, file, _file_):
 		print(" Getting Urls ...")
 		if host[:4] != "http":
 			host = "http://" + host
+		# get the source code os the site
 		sauce = requests.get(host).text
 		soup = bs(sauce, 'lxml')
+		# if the user wants to save the scan (--F <outfile.txt>)
 		if _file_ == True:
 				with open(file, 'a') as f:
 					f.write("\n ------=[Urls]=------\n")
 					f.close()
 		print("\n ------=[Urls]=------\n")
+		# looks for <a> tag in the source code
 		for url in soup.find_all('a'):
+			# then it get the parameter "href"
 			_url_ = url.get("href")
+			# prints out the url
 			print("--=[ %s" % (_url_))
 			if _file_ == True:
+				# save the url in the <outfile.txt>
 				with open(file, 'a') as f:
 					f.write("\n--=[ %s" %(_url_))
 					f.close()
@@ -178,19 +197,27 @@ def xsscanner(host, method, wordlist, _wordlist_):
 			host = "http://" + host
 		time_ = time.strftime("%H:%M:%S")
 		print("\n [*] Start Scanning [%s]: %s\n" % (time_, host))
+		# this is the header hbased will use
 		header = { 'User-Agent' : 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)' }
 		print(" Processing [%s] Request.." % (method))
 		_payload_ = False
 		if _wordlist_ == True:
 			try: 
 				print(" Testing Payloads...")
+				# read the wordlist
 				wordlist = open(wordlist, 'r')#.readlines()
 				for payload in wordlist:
+					# with get method
 					if method == 'get' or method == 'GET':
+						# send the get request with the payload and the header and if the payload is in the source it means
+						# it worked
 						if payload in requests.get(host + payload, headers=header).text:
 							print("\n ------=[Xss]=------\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
-							exit()			
+							exit()
+					# with post method
 					elif method == 'post' or method == 'POST':
+						# send the get request with the payload and the header and if the payload is in the source it means
+						# it worked
 						if payload in requests.post(host + payload, headers=header).text:
 							print("\n ------=[Xss]=------\n\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
 							wordlist.close()
@@ -206,6 +233,7 @@ def xsscanner(host, method, wordlist, _wordlist_):
 def findadm(host, file, _file_):
 	if host[:4] != "http":
 		host = "http://" + host
+	# directory list
 	list_ = ["/admin", "/adm", "/administrador", "/administrator", "/admin/login.php", "/admin_login",
 			 "/cgi-local/", "/sys/admin/", "/cpanel", "/adm/login.php", "/cgi/admin/", "/login.php",
 			 "/login", "/user", "/admincontrol/login.php", "/administratorlogin.php", "/adm/index.php",
@@ -229,11 +257,14 @@ def findadm(host, file, _file_):
 		print("\n ------=[Panel Admin]=------\n")
 		for page in list_:
 			url_ = host + page
+			# request to the url
 			r = requests.get(url_)
+			# if the page is up prints it
 			if r.status_code == 200:
 				time_ = time.strftime("%H:%M:%S")
 				print ("\n [+] Page Found [%s] > %s > %s\n" % (time_, url_, page))
 				if _file_ == True:
+					# save the url in the <outfile.txt> 
 					with open(file, 'a') as f:
 						f.write("\n[ Found ] %s" %(url_))
 						f.close()
