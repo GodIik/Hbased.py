@@ -123,7 +123,7 @@ def sitesource(host):
 		host = "http://" + host
 	# send the request and get the source
 	sauce = requests.get(host).text
-	print("\n ------=[Robots.txt]=------\n\n%s\n\n ------=[Robots.txt]=------" % (sauce))
+	print("\n ------=[Source Code]=------\n\n%s\n\n ------=[Source Code]=------" % (sauce))
 
 
 def robots(host, file, _file_):
@@ -209,19 +209,21 @@ def xsscanner(host, method, wordlist, _wordlist_):
 				for payload in wordlist:
 					# with get method
 					if method == 'get' or method == 'GET':
-						# send the get request with the payload and the header and if the payload is in the source it means
-						# it worked
-						if payload in requests.get(host + payload, headers=header).text:
-							print("\n ------=[Xss]=------\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
-							exit()
+						for line in requests.get(host + payload, headers=header).text:
+							# send the get request with the payload and the header and if the payload is in the source it means
+							# it worked
+							if payload in line:
+								print("\n ------=[Xss]=------\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
+								exit()
 					# with post method
 					elif method == 'post' or method == 'POST':
-						# send the get request with the payload and the header and if the payload is in the source it means
-						# it worked
-						if payload in requests.post(host + payload, headers=header).text:
-							print("\n ------=[Xss]=------\n\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
-							wordlist.close()
-							exit()
+						for line in requests.post(host + payload, headers=header).text:
+							# send the get request with the payload and the header and if the payload is in the source it means
+							# it worked
+							if payload in line:
+								print("\n ------=[Xss]=------\n\nGot XSS with: %s%s\n ------=[Xss]=------" % (host, payload))
+								wordlist.close()
+								exit()
 				print("\n [ ! ] XSS not Found")
 				sys.exit()
 
